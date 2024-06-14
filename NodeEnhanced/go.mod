@@ -4,6 +4,7 @@ go 1.22.3
 
 require (
 	github.com/jessevdk/go-flags v1.5.0
+	github.com/v4sr/L0/KubeClient v0.0.0-20240614181922-26c1d40bd904
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
 	k8s.io/client-go v0.30.2

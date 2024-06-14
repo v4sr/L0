@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/v4sr/L0/KubeClient"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/homedir"
