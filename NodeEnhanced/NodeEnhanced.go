@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jessevdk/go-flags"
 	"github.com/v4sr/L0/KubeClient"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -88,24 +87,9 @@ func getDeploy(clientset kubernetes.Clientset, ns_name string) (*appsv1.Deployme
 }
 
 func main() {
-	var opts Options
-	parser := flags.NewParser(&opts, flags.Default)
+	kubeconfig := filepath.Join(homedir.HomeDir(), ".kube", "config")
 
-	_, err := parser.Parse()
-	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Printf("%s", parser.Usage)
-
-	// Determine kubeconfig path
-	kubeconfig := opts.Kubeconfig
-	if kubeconfig == "" {
-		kubeconfig = filepath.Join(homedir.HomeDir(), ".kube", "config")
-	}
-
-	_, clientset, err := BuildClient(kubeconfig)
+	_, clientset, err := KubeClient.BuildClient(kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
