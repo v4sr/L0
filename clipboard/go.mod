@@ -1,4 +1,4 @@
-module github.com/v4sr/L0/clipboard v1.0.0
+module github.com/v4sr/L0/clipboard
 
 go 1.23.2
 
