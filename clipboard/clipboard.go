@@ -1,4 +1,4 @@
-package clipboard
+package main
 
 import (
 	"github.com/atotto/clipboard"
