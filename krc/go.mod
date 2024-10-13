@@ -1,4 +1,4 @@
-module github.com/v4sr/L0/krc
+module github.com/v4sr/L0/krc v1.0.0
 
 go 1.23.2
 

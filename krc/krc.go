@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/util/homedir"
 
-	"github.com/v4sr/L0/clipboard"
+	clipboard "github.com/v4sr/L0/clipboard"
 )
 
 func BuildClient() (*rest.Config, *kubernetes.Clientset, error) {
