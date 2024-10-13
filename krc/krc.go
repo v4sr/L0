@@ -10,7 +10,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -21,6 +23,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/v4sr/L0/clipboard"
 )
 
 func BuildClient() (*rest.Config, *kubernetes.Clientset, error) {
@@ -45,6 +49,19 @@ func BuildClient() (*rest.Config, *kubernetes.Clientset, error) {
 	return restcfg, clientset, nil
 }
 
+/*
+	func checkRequiredUtils(basic_req bool) (error) {
+		req_list := [...]string{"xclip","jq"}
+		if basic_req {
+			for r:=0; r < len(req_list); r++ {
+
+			}
+		} else {
+
+		}
+	}
+*/
+
 func nsExists(clientset kubernetes.Clientset, selected_ns string) (bool, error) {
 	_, err := clientset.CoreV1().Namespaces().Get(context.Background(), selected_ns, metav1.GetOptions{})
 	if err != nil {
@@ -56,6 +73,57 @@ func nsExists(clientset kubernetes.Clientset, selected_ns string) (bool, error) 
 	}
 
 	return true, nil
+}
+
+func searchNamespace(clientset kubernetes.Clientset, ilike_ns string) error {
+	namespace_list, err := clientset.CoreV1().Namespaces().List(context.Background(), metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+
+		return fmt.Errorf("%w Error getting ilike namespace %s", err, ilike_ns)
+	}
+
+	namespace_regex := regexp.MustCompile("(?i)" + regexp.QuoteMeta(ilike_ns))
+
+	var ilike_list []string
+	for _, namespace := range namespace_list.Items {
+		if namespace_regex.MatchString(strings.ToLower(namespace.Name)) {
+			ilike_list = append(ilike_list, namespace.Name)
+		}
+	}
+
+	fmt.Printf("REGEX matches for \"%w\"", ilike_ns)
+	for n, namespace := range ilike_list {
+		fmt.Printf("[%d] %s\n", n, namespace)
+	}
+
+	fmt.Printf("Select a Namespace: ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("%w Error scanning index", err)
+	}
+
+	selected_ns_index, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		return fmt.Errorf("%w Error convertig string %s to int", err, scanner.Text())
+	}
+
+	if selected_ns_index < 0 || selected_ns_index >= len(ilike_list) {
+		return fmt.Errorf("Invalid namespace index (out of range [0-%d])", len(ilike_list))
+	}
+
+	selected_ns := string(ilike_list[selected_ns_index])
+	clipboardUtil := clipboard.NewClipboardUtil()
+
+	err = clipboardUtil.Copy(selected_ns)
+	if err != nil {
+		return fmt.Errorf("Error copying to clipboard: %v\n", err)
+	}
+
+	return nil
 }
 
 func getPo(clientset kubernetes.Clientset, selected_ns string) (*v1.Pod, error) {
